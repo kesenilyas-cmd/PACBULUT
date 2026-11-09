@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<title>Pac-Man</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:#0b0b2b;color:#fff;font-family:system-ui,sans-serif;overflow:hidden;touch-action:none}
+.scr{display:none;position:absolute;inset:0;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom);flex-direction:column;align-items:center}
+.scr.on{display:flex}
+h1{font-size:44px;margin:7vh 0 4vh;color:#ffd400;text-shadow:0 4px 0 #b8860b}
+.btn{font-size:24px;font-weight:700;border:0;border-radius:20px;padding:16px 28px;margin:8px;background:#ffd400;color:#222;min-width:240px;box-shadow:0 5px 0 #b8860b}
+.btn.alt{background:#4d6bff;color:#fff;box-shadow:0 5px 0 #24379a}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #000}
+#grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:420px;overflow:auto;padding:6px;touch-action:pan-y}
+.card{background:#1a1a52;border-radius:18px;padding:10px;text-align:center}
+.card .pv{width:96px;height:96px;border-radius:50%;margin:0 auto 6px;border:5px solid var(--c);background:var(--c);object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:40px}
+.card label,.card button{display:block;margin:5px auto 0;border:0;border-radius:12px;padding:9px;font-size:15px;font-weight:700;background:#ffd400;color:#222;width:100%}
+.card button{background:#444;color:#fff;font-weight:400;font-size:13px}
+#hud{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:520px;font-size:22px;font-weight:700;padding:8px 4px;gap:8px}
+#hud button{border:0;border-radius:12px;background:#4d6bff;color:#fff;font-size:20px;padding:6px 12px}
+#wrap{position:relative}
+#msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:34px;font-weight:800;color:#ffd400;text-shadow:0 3px 6px #000;pointer-events:none;white-space:pre-line}
+#pad{display:grid;grid-template-columns:repeat(3,76px);grid-template-rows:repeat(3,64px);gap:6px;margin-top:10px}
+#pad button{border:0;border-radius:18px;background:#2b3a9e;color:#fff;font-size:30px}
+#pad button:active{background:#ffd400;color:#222}
+</style></head><body>
+
+<div id="menu" class="scr on">
+ <h1>🟡 PAC-MAN</h1>
+ <button class="btn" id="play">▶ OYNA</button>
+ <button class="btn alt" id="pickb">📷 Fotoğrafları Seç</button>
+</div>
+
+<div id="pick" class="scr">
+ <h2 style="margin:14px 0 8px">Fotoğrafları Seç</h2>
+ <div id="grid"></div>
+ <button class="btn" id="back" style="margin-top:12px">⬅ Geri</button>
+</div>
+
+<div id="game" class="scr">
+ <div id="hud"><button id="menub">☰</button><span id="sc">0</span><span id="lv">Seviye 1</span><span id="li"></span></div>
+ <div id="wrap"><canvas id="cv"></canvas><div id="msg"></div></div>
+ <div id="pad">
+  <span></span><button data-d="u">▲</button><span></span>
+  <button data-d="l">◀</button><span></span><button data-d="r">▶</button>
+  <span></span><button data-d="d">▼</button><span></span>
+ </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const MAP=["###############","#......#......#","#.###.###.###.#","#o...........o#","#.###.#.#.###.#","#.....#.#.....#","#####.#.#.#####","#.............#","#.###.#.#.###.#","#.....#.#.....#","###.#.....#.###","#.............#","#.###.###.###.#","#o...........o#","#.##.#####.##.#","#......#......#","###############"];
+const C=15,R=17;
+const SL=[{k:'pac',n:'Pacman',c:'#ffd400',e:'😀'},{k:'g0',n:'Hayalet 1',c:'#ff4d4d',e:'👻'},{k:'g1',n:'Hayalet 2',c:'#ff9ff3',e:'👻'},{k:'g2',n:'Hayalet 3',c:'#4dd0ff',e:'👻'},{k:'g3',n:'Hayalet 4',c:'#ffa94d',e:'👻'}];
+const imgs={};
+const show=id=>{document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id))};
+
+/* ---------- FOTO SEÇİM ---------- */
+function loadImgs(){SL.forEach(s=>{let d=null;try{d=localStorage.getItem('pm_'+s.k)}catch(e){}
+ if(d){const i=new Image();i.onload=()=>imgs[s.k]=i;i.src=d}else delete imgs[s.k]})}
+function buildPick(){
+ const g=$('grid');g.innerHTML='';
+ SL.forEach(s=>{
+  const d=document.createElement('div');d.className='card';d.style.setProperty('--c',s.c);
+  let d0=null;try{d0=localStorage.getItem('pm_'+s.k)}catch(e){}
+  const pv=d0?Object.assign(new Image(),{src:d0,className:'pv'}):Object.assign(document.createElement('div'),{className:'pv',textContent:s.e});
+  const lab=document.createElement('label');lab.textContent='📷 '+s.n;
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.hidden=true;lab.appendChild(inp);
+  const rst=document.createElement('button');rst.textContent='Sıfırla';
+  inp.onchange=()=>{const f=inp.files[0];if(!f)return;const r=new FileReader();
+   r.onload=()=>{const im=new Image();im.onload=()=>{
+    const c=document.createElement('canvas');c.width=c.height=160;const q=Math.min(im.width,im.height);
+    c.getContext('2d').drawImage(im,(im.width-q)/2,(im.height-q)/2,q,q,0,0,160,160);
+    try{localStorage.setItem('pm_'+s.k,c.toDataURL('image/jpeg',.85))}catch(e){alert('Kaydedilemedi')}
+    loadImgs();buildPick()};im.src=r.result};r.readAsDataURL(f)};
+  rst.onclick=()=>{try{localStorage.removeItem('pm_'+s.k)}catch(e){}loadImgs();buildPick()};
+  d.append(pv,lab,rst);g.appendChild(d)})}
+$('pickb').onclick=()=>{buildPick();show('pick')};
+$('back').onclick=()=>show('menu');
+
+/* ---------- OYUN ---------- */
+const cv=$('cv'),x=cv.getContext('2d');
+let T=20,grid,dots,score,lives,level,pac,gh,state='menu',tmr=0,t=0,last=0,nd=null;
+const DIR={u:[0,-1],d:[0,1],l:[-1,0],r:[1,0]};
+function size(){const dpr=window.devicePixelRatio||1;
+ T=Math.max(10,Math.min((innerWidth-24)/C,(innerHeight-250-env())/R));
+ cv.style.width=T*C+'px';cv.style.height=T*R+'px';cv.width=T*C*dpr;cv.height=T*R*dpr;x.setTransform(dpr,0,0,dpr,0,0)}
+function env(){return 20}
+addEventListener('resize',()=>{if(state!=='menu')size()});
+const free=(c,r)=>r>=0&&r<R&&c>=0&&c<C&&grid[r][c]!=='#';
+function mk(c,r,sp){return{c,r,sc:c,sr:r,dx:0,dy:0,p:0,mv:false,sp,f:false,w:0}}
+function newLevel(){
+ grid=MAP.map(r=>[...r]);dots=0;grid.forEach(r=>r.forEach(v=>{if(v==='.'||v==='o')dots++}));resetPos(true)}
+function resetPos(first){
+ const sp=Math.min(2.3+level*.2,3.4);
+ pac=mk(7,13,4.8);
+ gh=[[7,7,0],[5,7,2],[9,7,4],[3,7,6]].map(([c,r,w],i)=>{const g=mk(c,r,sp);g.w=Math.max(0,w-level);g.i=i;return g});
+ nd=null;fright=0}
+let fright=0;
+function start(){score=0;lives=5;level=1;newLevel();size();hud();state='play';msg('')}
+function hud(){$('sc').textContent='⭐ '+score;$('lv').textContent='Seviye '+level;$('li').textContent='❤️'.repeat(lives)}
+function msg(m){$('msg').textContent=m}
+function setDir(n){const d=DIR[n];if(!d||state!=='play')return;nd=d;
+ if(pac.mv&&d[0]===-pac.dx&&d[1]===-pac.dy&&(d[0]||d[1])){pac.c+=pac.dx;pac.r+=pac.dy;pac.dx=d[0];pac.dy=d[1];pac.p=1-pac.p}}
+function step(e,dt,choose,arrive){
+ let s=e.sp*dt;
+ while(s>0){
+  if(!e.mv){choose(e);if(!e.dx&&!e.dy)return;e.mv=true;e.p=0}
+  const need=1-e.p;
+  if(s>=need){s-=need;e.c+=e.dx;e.r+=e.dy;e.p=0;e.mv=false;arrive&&arrive(e)}else{e.p+=s;s=0}}}
+function pChoose(e){
+ if(nd&&free(e.c+nd[0],e.r+nd[1])){e.dx=nd[0];e.dy=nd[1]}
+ else if(!free(e.c+e.dx,e.r+e.dy)){e.dx=e.dy=0}}
+function pArrive(e){
+ const v=grid[e.r][e.c];
+ if(v==='.'||v==='o'){grid[e.r][e.c]=' ';dots--;score+=v==='o'?50:10;
+  if(v==='o'){fright=9;gh.forEach(g=>g.f=true)}
+  hud();if(dots<=0){state='win';tmr=2.2;msg('🎉 Bravo! 🎉')}}}
+function gChoose(g){
+ if(g.w>0){g.dx=g.dy=0;return}
+ let o=Object.values(DIR).filter(d=>free(g.c+d[0],g.r+d[1])&&!(d[0]===-g.dx&&d[1]===-g.dy&&(g.dx||g.dy)));
+ if(!o.length)o=Object.values(DIR).filter(d=>free(g.c+d[0],g.r+d[1]));
+ let pick=o[Math.random()*o.length|0];
+ if(!g.f&&Math.random()<.35){const px=pac.c,py=pac.r;
+  pick=o.reduce((a,b)=>Math.hypot(g.c+b[0]-px,g.r+b[1]-py)<Math.hypot(g.c+a[0]-px,g.r+a[1]-py)?b:a)}
+ g.dx=pick[0];g.dy=pick[1]}
+const px=e=>e.c+e.dx*e.p,py=e=>e.r+e.dy*e.p;
+function update(dt){
+ t+=dt;
+ if(state==='win'){tmr-=dt;if(tmr<=0){level++;newLevel();hud();msg('');state='play'}return}
+ if(state==='hit'){tmr-=dt;if(tmr<=0){if(lives<=0){state='over';msg('Oyun bitti!\nTekrar için dokun')}else{resetPos();msg('');state='play'}}return}
+ if(state!=='play')return;
+ step(pac,dt,pChoose,pArrive);
+ if(state!=='play')return;
+ if(fright>0){fright-=dt;if(fright<=0)gh.forEach(g=>g.f=false)}
+ gh.forEach(g=>{if(g.w>0)g.w-=dt;g.sp=g.f?1.8:Math.min(2.3+level*.2,3.4);step(g,dt,gChoose)});
+ for(const g of gh){if(Math.hypot(px(g)-px(pac),py(g)-py(pac))<.6){
+  if(g.f){g.f=false;score+=200;hud();Object.assign(g,mk(7,7,g.sp),{w:2,i:g.i})}
+  else{lives--;hud();state='hit';tmr=1.3;msg(lives>0?'Hay aksi! 😮':'');break}}}}
+function sprite(k,cx,cy,rad,col,ring,extra){
+ const im=imgs[k];
+ if(im){x.save();x.beginPath();x.arc(cx,cy,rad,0,7);x.clip();x.drawImage(im,cx-rad,cy-rad,rad*2,rad*2);
+  if(extra==='dim'){x.fillStyle='rgba(30,60,255,.45)';x.fillRect(cx-rad,cy-rad,rad*2,rad*2)}x.restore();
+  x.lineWidth=T*.12;x.strokeStyle=ring;x.beginPath();x.arc(cx,cy,rad,0,7);x.stroke()}
+ return !!im}
+function draw(){
+ x.clearRect(0,0,T*C,T*R);
+ for(let r=0;r<R;r++)for(let c=0;c<C;c++){const v=grid[r][c],X=c*T,Y=r*T;
+  if(v==='#'){x.fillStyle='#14206b';x.fillRect(X,Y,T,T);x.strokeStyle='#4d6bff';x.lineWidth=2;x.strokeRect(X+3,Y+3,T-6,T-6)}
+  else if(v==='.'){x.fillStyle='#ffe9a8';x.beginPath();x.arc(X+T/2,Y+T/2,T*.09,0,7);x.fill()}
+  else if(v==='o'){x.fillStyle='#fff';x.beginPath();x.arc(X+T/2,Y+T/2,T*(.2+.05*Math.sin(t*8)),0,7);x.fill()}}
+ gh.forEach(g=>{const cx=(px(g)+.5)*T,cy=(py(g)+.5)*T,rad=T*.46;
+  const blink=g.f&&fright<2&&Math.floor(t*6)%2;
+  const col=g.f?(blink?'#fff':'#2a4bff'):SL[g.i+1].c;
+  const wob=g.f?Math.sin(t*20)*T*.04:0;
+  if(!sprite('g'+g.i,cx+wob,cy,rad,col,col,g.f?'dim':'')){
+   x.fillStyle=col;x.beginPath();x.arc(cx,cy-rad*.1,rad,Math.PI,0);x.lineTo(cx+rad,cy+rad);
+   for(let k=0;k<4;k++)x.lineTo(cx+rad-(k+.5)*rad/2,cy+rad*(k%2?1:.7));x.lineTo(cx-rad,cy+rad);x.fill();
+   x.fillStyle='#fff';[-1,1].forEach(s=>{x.beginPath();x.arc(cx+s*rad*.38,cy-rad*.2,rad*.25,0,7);x.fill()});
+   x.fillStyle='#123';[-1,1].forEach(s=>{x.beginPath();x.arc(cx+s*rad*.38+pac.dx*2,cy-rad*.2,rad*.12,0,7);x.fill()})}});
+ const cx=(px(pac)+.5)*T,cy=(py(pac)+.5)*T,rad=T*.48*(state==='hit'?Math.max(.1,tmr/1.3):1);
+ if(!sprite('pac',cx,cy,rad,'#ffd400','#ffd400')){
+  const m=(Math.sin(t*14)+1)/2*.6+.05,a=Math.atan2(pac.dy,pac.dx||(pac.dy?0:1));
+  x.fillStyle='#ffd400';x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,rad,a+m,a+Math.PI*2-m);x.fill()}}
+function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
+ if(state!=='menu'){update(dt);draw()}requestAnimationFrame(loop)}
+$('play').onclick=()=>{show('game');start()};
+$('menub').onclick=()=>{state='menu';show('menu')};
+document.querySelectorAll('#pad button').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();setDir(b.dataset.d)}));
+addEventListener('keydown',e=>{const m={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',w:'u',s:'d',a:'l',d:'r'}[e.key];if(m){e.preventDefault();setDir(m)}});
+let sx,sy;
+$('game').addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;if(state==='over')start()},{passive:true});
+$('game').addEventListener('touchmove',e=>{if(sx==null)return;const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+ if(Math.hypot(dx,dy)>22){setDir(Math.abs(dx)>Math.abs(dy)?(dx>0?'r':'l'):(dy>0?'d':'u'));sx=e.touches[0].clientX;sy=e.touches[0].clientY}},{passive:true});
+$('game').addEventListener('touchend',()=>sx=null);
+$('game').addEventListener('click',()=>{if(state==='over')start()});
+loadImgs();requestAnimationFrame(loop);
+</script></body></html>
