@@ -21,6 +21,10 @@ h1{font-size:44px;margin:7vh 0 4vh;color:#ffd400;text-shadow:0 4px 0 #b8860b}
 #hud button{border:0;border-radius:12px;background:#4d6bff;color:#fff;font-size:20px;padding:6px 12px}
 #wrap{position:relative}
 #msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:34px;font-weight:800;color:#ffd400;text-shadow:0 3px 6px #000;pointer-events:none;white-space:pre-line}
+#cap{position:absolute;left:0;right:0;bottom:8px;text-align:center;pointer-events:none;opacity:0;transition:opacity .25s}
+#cap.on{opacity:1}
+#cap b{display:inline-block;background:rgba(0,0,0,.75);border-radius:14px;padding:6px 14px;font-size:24px;color:#ffd400}
+#cap i{display:block;font-style:normal;font-size:14px;color:#fff;text-shadow:0 1px 3px #000;margin-top:3px}
 #pad{display:grid;grid-template-columns:repeat(3,76px);grid-template-rows:repeat(3,64px);gap:6px;margin-top:10px}
 #pad button{border:0;border-radius:18px;background:#2b3a9e;color:#fff;font-size:30px}
 #pad button:active{background:#ffd400;color:#222}
@@ -30,6 +34,7 @@ h1{font-size:44px;margin:7vh 0 4vh;color:#ffd400;text-shadow:0 4px 0 #b8860b}
  <h1>🟡 PAC-MAN</h1>
  <button class="btn" id="play">▶ OYNA</button>
  <button class="btn alt" id="pickb">📷 Fotoğrafları Seç</button>
+ <button class="btn alt" id="engb">🔊 İngilizce: AÇIK</button>
 </div>
 
 <div id="pick" class="scr">
@@ -41,7 +46,7 @@ h1{font-size:44px;margin:7vh 0 4vh;color:#ffd400;text-shadow:0 4px 0 #b8860b}
 
 <div id="game" class="scr">
  <div id="hud"><button id="menub">☰</button><span id="sc">0</span><span id="lv">Seviye 1</span><span id="li"></span></div>
- <div id="wrap"><canvas id="cv"></canvas><div id="msg"></div></div>
+ <div id="wrap"><canvas id="cv"></canvas><div id="msg"></div><div id="cap"></div></div>
  <div id="pad">
   <span></span><button data-d="u">▲</button><span></span>
   <button data-d="l">◀</button><span></span><button data-d="r">▶</button>
@@ -101,7 +106,28 @@ function resetPos(first){
  gh=[[7,7,0],[5,7,2],[9,7,4],[3,7,6]].map(([c,r,w],i)=>{const g=mk(c,r,sp);g.w=Math.max(0,w-level);g.i=i;return g});
  nd=null;fright=0}
 let fright=0;
-function start(){score=0;lives=5;level=1;newLevel();size();hud();state='play';msg('')}
+/* ---------- İNGİLİZCE KONUŞMA ---------- */
+let ENG=true,dc=0,capT;try{ENG=localStorage.getItem('pm_eng')!=='0'}catch(e){}
+const FOOD=[["I am hungry.","Ben açım."],["Yummy!","Çok lezzetli!"],["I am eating.","Yemek yiyorum."],["I am happy.","Mutluyum."],["I like it.","Bunu seviyorum."],["I want an apple.","Elma istiyorum."],["I like pizza.","Pizzayı severim."],["I am thirsty.","Susadım."],["I want water.","Su istiyorum."],["This is good.","Bu güzel."],["I am fast.","Ben hızlıyım."],["I can run.","Koşabilirim."],["I love cake.","Pastayı severim."],["I want milk.","Süt istiyorum."],["Look at me!","Bana bak!"],["I am big.","Ben büyüğüm."],["I can jump.","Zıplayabilirim."],["I see a star.","Bir yıldız görüyorum."],["I like to play.","Oynamayı severim."],["One, two, three!","Bir, iki, üç!"]];
+const START=[["I am going home.","Eve gidiyorum."],["I want to go to school.","Okula gitmek istiyorum."],["I want to eat.","Yemek yemek istiyorum."],["I am ready.","Hazırım."],["Good morning!","Günaydın!"],["I want to play.","Oynamak istiyorum."],["I am going to the park.","Parka gidiyorum."],["I am going to the shop.","Markete gidiyorum."],["Let's go!","Haydi gidelim!"],["I have a friend.","Bir arkadaşım var."]];
+const SAD=[["Oh no! I am scared.","Ah hayır! Korktum."],["Oh no! I am sad.","Ah hayır! Üzgünüm."],["Help me!","Bana yardım et!"],["Ouch!","Of!"],["Oops!","Hay aksi!"],["I am tired.","Yoruldum."]];
+const WIN=[["I am happy! I am going home.","Mutluyum! Eve gidiyorum."],["Hooray! I am full.","Yaşasın! Karnım doydu."],["I did it!","Başardım!"],["Well done!","Aferin!"],["I am the winner.","Ben kazandım."],["Thank you!","Teşekkürler!"]];
+const STRONG=[["I am strong!","Ben güçlüyüm!"],["I am a super hero.","Ben süper kahramanım."],["Power!","Güç!"],["I am so strong.","Çok güçlüyüm."]];
+const GHOST=[["Bye bye, ghost!","Güle güle hayalet!"],["Go away!","Git buradan!"],["Got you!","Yakaladım!"],["Goodbye!","Hoşça kal!"]];
+function say(en,tr,force){
+ if(!ENG)return;const ss=window.speechSynthesis;
+ if(!force&&ss&&ss.speaking)return;
+ const c=$('cap');c.innerHTML='<b></b><i></i>';c.firstChild.textContent=en;c.lastChild.textContent=tr;c.classList.add('on');
+ clearTimeout(capT);capT=setTimeout(()=>c.classList.remove('on'),3200);
+ if(ss){try{ss.cancel();const u=new SpeechSynthesisUtterance(en);u.lang='en-US';u.rate=.8;u.pitch=1.25;ss.speak(u)}catch(e){}}}
+function pickR(a){
+ if(!a._d||!a._d.length){a._d=[...a].sort(()=>Math.random()-.5);const n=a._d.length-1;if(a._l&&n>0&&a._d[n]===a._l)[a._d[0],a._d[n]]=[a._d[n],a._d[0]]}
+ return a._l=a._d.pop()}
+const sayR=(a,f)=>{const q=pickR(a);say(q[0],q[1],f)};
+function engBtn(){$('engb').textContent='🔊 İngilizce: '+(ENG?'AÇIK':'KAPALI')}
+$('engb').onclick=()=>{ENG=!ENG;try{localStorage.setItem('pm_eng',ENG?'1':'0')}catch(e){}engBtn();if(ENG)say('Hello!','Merhaba!',true)};
+engBtn();
+function start(){score=0;lives=5;level=1;dc=0;newLevel();size();hud();state='play';msg('');say("Let's play!","Hadi oynayalım!",true)}
 function hud(){$('sc').textContent='⭐ '+score;$('lv').textContent='Seviye '+level;$('li').textContent='❤️'.repeat(lives)}
 function msg(m){$('msg').textContent=m}
 function setDir(n){const d=DIR[n];if(!d||state!=='play')return;nd=d;
@@ -118,8 +144,8 @@ function pChoose(e){
 function pArrive(e){
  const v=grid[e.r][e.c];
  if(v==='.'||v==='o'){grid[e.r][e.c]=' ';dots--;score+=v==='o'?50:10;
-  if(v==='o'){fright=9;gh.forEach(g=>g.f=true)}
-  hud();if(dots<=0){state='win';tmr=2.2;msg('🎉 Bravo! 🎉')}}}
+  if(v==='o'){fright=9;gh.forEach(g=>g.f=true);sayR(STRONG)}else if(++dc%30===0)sayR(FOOD)
+  hud();if(dots<=0){state='win';tmr=2.8;msg('🎉 Bravo! 🎉');sayR(WIN,true)}}}
 function gChoose(g){
  if(g.w>0){g.dx=g.dy=0;return}
  let o=Object.values(DIR).filter(d=>free(g.c+d[0],g.r+d[1])&&!(d[0]===-g.dx&&d[1]===-g.dy&&(g.dx||g.dy)));
@@ -131,7 +157,7 @@ function gChoose(g){
 const px=e=>e.c+e.dx*e.p,py=e=>e.r+e.dy*e.p;
 function update(dt){
  t+=dt;
- if(state==='win'){tmr-=dt;if(tmr<=0){level++;newLevel();hud();msg('');state='play'}return}
+ if(state==='win'){tmr-=dt;if(tmr<=0){level++;newLevel();hud();msg('');state='play';sayR(START,true)}return}
  if(state==='hit'){tmr-=dt;if(tmr<=0){if(lives<=0){state='over';msg('Oyun bitti!\nTekrar için dokun')}else{resetPos();msg('');state='play'}}return}
  if(state!=='play')return;
  step(pac,dt,pChoose,pArrive);
@@ -139,8 +165,8 @@ function update(dt){
  if(fright>0){fright-=dt;if(fright<=0)gh.forEach(g=>g.f=false)}
  gh.forEach(g=>{if(g.w>0)g.w-=dt;g.sp=g.f?1.8:Math.min(2.3+level*.2,3.4);step(g,dt,gChoose)});
  for(const g of gh){if(Math.hypot(px(g)-px(pac),py(g)-py(pac))<.6){
-  if(g.f){g.f=false;score+=200;hud();Object.assign(g,mk(7,7,g.sp),{w:2,i:g.i})}
-  else{lives--;hud();state='hit';tmr=1.3;msg(lives>0?'Hay aksi! 😮':'');break}}}}
+  if(g.f){g.f=false;score+=200;hud();sayR(GHOST,true);Object.assign(g,mk(7,7,g.sp),{w:2,i:g.i})}
+  else{lives--;hud();state='hit';tmr=1.3;msg(lives>0?'Hay aksi! 😮':'');if(lives>0)sayR(SAD,true);else say("I am sleepy. Good night.","Uykum geldi. İyi geceler.",true);break}}}}
 function sprite(k,cx,cy,rad,col,ring,extra){
  const im=imgs[k];
  if(im){x.save();x.beginPath();x.arc(cx,cy,rad,0,7);x.clip();x.drawImage(im,cx-rad,cy-rad,rad*2,rad*2);
