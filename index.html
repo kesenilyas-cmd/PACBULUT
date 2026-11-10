@@ -57,8 +57,8 @@ h1{font-size:44px;margin:7vh 0 4vh;color:#ffd400;text-shadow:0 4px 0 #b8860b}
 
 <script>
 const $=id=>document.getElementById(id);
-const MAP=["###############","#......#......#","#.###.###.###.#","#o...........o#","#.###.#.#.###.#","#.....#.#.....#","#####.#.#.#####","#.............#","#.###.#.#.###.#","#.....#.#.....#","###.#.....#.###","#.............#","#.###.###.###.#","#o...........o#","#.##.#####.##.#","#......#......#","###############"];
-const C=15,R=17;
+const MAP=["###########","#....#....#","#.##...##.#","#o.......o#","#.##.#.##.#","#....#....#","###.#.#.###","#.........#","#.##.#.##.#","#....#....#","#.##...##.#","#o.......o#","###########"];
+const C=11,R=13;
 const SL=[{k:'pac',n:'Pacman',c:'#ffd400',e:'😀'},{k:'g0',n:'Hayalet 1',c:'#ff4d4d',e:'👻'},{k:'g1',n:'Hayalet 2',c:'#ff9ff3',e:'👻'},{k:'g2',n:'Hayalet 3',c:'#4dd0ff',e:'👻'},{k:'g3',n:'Hayalet 4',c:'#ffa94d',e:'👻'}];
 const imgs={};
 const show=id=>{document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id))};
@@ -83,7 +83,7 @@ function buildPick(){
     loadImgs();buildPick()};im.src=r.result};r.readAsDataURL(f)};
   rst.onclick=()=>{try{localStorage.removeItem('pm_'+s.k)}catch(e){}loadImgs();buildPick()};
   d.append(pv,lab,rst);g.appendChild(d)})}
-let PS=1.9;try{PS=parseFloat(localStorage.getItem('pm_ps'))||1.9}catch(e){}
+let PS=1.5;try{PS=parseFloat(localStorage.getItem('pm_ps'))||1.5}catch(e){}
 $('ps').value=PS;$('ps').oninput=e=>{PS=parseFloat(e.target.value);try{localStorage.setItem('pm_ps',PS)}catch(_){}};
 $('pickb').onclick=()=>{buildPick();show('pick')};
 $('back').onclick=()=>show('menu');
@@ -103,48 +103,49 @@ function newLevel(){
  grid=MAP.map(r=>[...r]);dots=0;grid.forEach(r=>r.forEach(v=>{if(v==='.'||v==='o')dots++}));resetPos(true)}
 function resetPos(first){
  const sp=Math.min(2.3+level*.2,3.4);
- pac=mk(7,13,4.8);
- gh=[[7,7,0],[5,7,2],[9,7,4],[3,7,6]].map(([c,r,w],i)=>{const g=mk(c,r,sp);g.w=Math.max(0,w-level);g.i=i;return g});
+ pac=mk(5,11,4.8);
+ gh=[[5,7,0],[3,7,2],[7,7,4],[9,7,6]].map(([c,r,w],i)=>{const g=mk(c,r,sp);g.w=Math.max(0,w-level);g.i=i;return g});
  nd=null;fright=0}
 let fright=0;
 /* ---------- İNGİLİZCE KONUŞMA ---------- */
 let ENG=true,dc=0,capT;try{ENG=localStorage.getItem('pm_eng')!=='0'}catch(e){}
-const FOOD=[["I am hungry.","Ben açım."],["Yummy!","Çok lezzetli!"],["I am eating.","Yemek yiyorum."],["I am happy.","Mutluyum."],["I like it.","Bunu seviyorum."],["I want an apple.","Elma istiyorum."],["I like pizza.","Pizzayı severim."],["I am thirsty.","Susadım."],["I want water.","Su istiyorum."],["This is good.","Bu güzel."],["I am fast.","Ben hızlıyım."],["I can run.","Koşabilirim."],["I love cake.","Pastayı severim."],["I want milk.","Süt istiyorum."],["Look at me!","Bana bak!"],["I am big.","Ben büyüğüm."],["I can jump.","Zıplayabilirim."],["I see a star.","Bir yıldız görüyorum."],["I like to play.","Oynamayı severim."],["One, two, three!","Bir, iki, üç!"]];
-const START=[["I am going home.","Eve gidiyorum."],["I want to go to school.","Okula gitmek istiyorum."],["I want to eat.","Yemek yemek istiyorum."],["I am ready.","Hazırım."],["Good morning!","Günaydın!"],["I want to play.","Oynamak istiyorum."],["I am going to the park.","Parka gidiyorum."],["I am going to the shop.","Markete gidiyorum."],["Let's go!","Haydi gidelim!"],["I have a friend.","Bir arkadaşım var."]];
-const SAD=[["Oh no! I am scared.","Ah hayır! Korktum."],["Oh no! I am sad.","Ah hayır! Üzgünüm."],["Help me!","Bana yardım et!"],["Ouch!","Of!"],["Oops!","Hay aksi!"],["I am tired.","Yoruldum."]];
-const WIN=[["I am happy! I am going home.","Mutluyum! Eve gidiyorum."],["Hooray! I am full.","Yaşasın! Karnım doydu."],["I did it!","Başardım!"],["Well done!","Aferin!"],["I am the winner.","Ben kazandım."],["Thank you!","Teşekkürler!"]];
-const STRONG=[["I am strong!","Ben güçlüyüm!"],["I am a super hero.","Ben süper kahramanım."],["Power!","Güç!"],["I am so strong.","Çok güçlüyüm."]];
-const GHOST=[["Bye bye, ghost!","Güle güle hayalet!"],["Go away!","Git buradan!"],["Got you!","Yakaladım!"],["Goodbye!","Hoşça kal!"]];
-let lastT=0;
+const CHAT=[["Yum yum yum! These dots are so yummy!","Yum yum yum! Bu noktalar çok lezzetli!"],["I am so hungry! Let me eat them all!","Çok açım! Hepsini yiyeceğim!"],["Go go go! You can do it!","Hadi hadi hadi! Yapabilirsin!"],["Watch out for the ghosts!","Hayaletlere dikkat!"],["Wow, this is so much fun!","Vay, bu çok eğlenceli!"],["I love eating dots!","Nokta yemeyi seviyorum!"],["Faster, faster, faster!","Daha hızlı, daha hızlı!"],["Look, there are more dots over there!","Bak, orada daha çok nokta var!"],["I am the best Pacman in the world!","Ben dünyanın en iyi Pacman'iyim!"],["Oh, I can see a big dot! Let's get it!","Ah, büyük bir nokta görüyorum! Alalım!"],["Don't stop! Keep going!","Durma! Devam et!"],["I am running so fast today!","Bugün çok hızlı koşuyorum!"],["Turn left! No, turn right!","Sola dön! Hayır, sağa dön!"],["Ha ha! The ghosts can't catch me!","Ha ha! Hayaletler beni yakalayamaz!"],["My tummy is going to be so full!","Karnım çok dolacak!"],["One more dot, and one more, and one more!","Bir nokta daha, bir tane daha, bir tane daha!"],["This is the best game ever!","Bu şimdiye kadarki en iyi oyun!"],["I am going to school soon, but first, dots!","Yakında okula gidiyorum ama önce noktalar!"],["I want to go home and eat dinner!","Eve gidip akşam yemeği yemek istiyorum!"],["Yay! I am so happy right now!","Yaşasın! Şu an çok mutluyum!"],["Come on, my friend, let's go!","Hadi arkadaşım, gidelim!"],["I can hear the ghosts coming!","Hayaletlerin geldiğini duyuyorum!"],["Up, down, left, right! Here I go!","Yukarı, aşağı, sola, sağa! İşte gidiyorum!"],["Wow, look at all these dots!","Vay, şu noktalara bak!"],["Munch, munch, munch! So tasty!","Ham ham ham! Çok lezzetli!"],["I am not scared of anything!","Hiçbir şeyden korkmuyorum!"],["Are you ready? Here we go again!","Hazır mısın? İşte yine başlıyoruz!"],["Smile! We are playing a great game!","Gülümse! Harika bir oyun oynuyoruz!"],["I am so hungry, I could eat a hundred dots!","O kadar açım ki yüz nokta yiyebilirim!"],["Quick, eat the dots before the ghosts come!","Çabuk, hayaletler gelmeden noktaları ye!"],["Good job! Keep it up!","Aferin! Böyle devam!"],["I like school, but I like this game more!","Okulu severim ama bu oyunu daha çok severim!"]];
+const START=[["New level! Ready, set, go!","Yeni seviye! Hazır, bitti, başla!"],["Hello, friend! Are you ready to play?","Merhaba arkadaşım! Oynamaya hazır mısın?"],["I am going home, but first, let's eat!","Eve gidiyorum ama önce yiyelim!"],["I want to go to school, but first, let's play!","Okula gitmek istiyorum ama önce oynayalım!"],["Here we go! Let's eat some dots!","İşte başlıyoruz! Biraz nokta yiyelim!"],["I am hungry again! Dots, here I come!","Yine acıktım! Noktalar, geliyorum!"],["Wow, a new maze! Let's explore!","Vay, yeni bir labirent! Hadi keşfedelim!"],["Let's go, let's go, let's go!","Hadi, hadi, hadi!"],["I am ready for a new adventure!","Yeni bir maceraya hazırım!"],["Hooray, let's play again!","Yaşasın, tekrar oynayalım!"]];
+const SAD=[["Oh no! The ghost got me!","Ah hayır! Hayalet beni yakaladı!"],["Ouch! That was scary!","Of! Çok korkunçtu!"],["Oops! Let's try again!","Hay aksi! Tekrar deneyelim!"],["Help! Help! It's a ghost!","İmdat! İmdat! Bu bir hayalet!"],["Oh no, I am a little bit sad.","Ah hayır, biraz üzgünüm."],["Don't worry, I can do it again!","Merak etme, tekrar yapabilirim!"]];
+const WIN=[["Hooray! We did it! I am so happy!","Yaşasın! Başardık! Çok mutluyum!"],["Yay! All the dots are gone! I am full!","Yaşasın! Tüm noktalar bitti! Karnım doydu!"],["Wow, you are amazing! Great job!","Vay, harikasın! Çok iyi iş!"],["I did it! I did it! I am the winner!","Başardım! Başardım! Ben kazandım!"],["Well done! Now I am going home!","Aferin! Şimdi eve gidiyorum!"],["Fantastic! You are the best!","Muhteşem! Sen en iyisisin!"]];
+const STRONG=[["Wow! I am super strong now!","Vay! Şimdi süper güçlüyüm!"],["Power up! I am a super hero!","Güç doldu! Ben süper kahramanım!"],["Rawr! Now I can eat the ghosts!","Rrrr! Şimdi hayaletleri yiyebilirim!"],["Look out, ghosts! Here I come!","Dikkat hayaletler! Geliyorum!"]];
+const GHOST=[["Gotcha! Bye bye, ghost!","Yakaladım! Güle güle hayalet!"],["Ha ha! I got you, ghost!","Ha ha! Seni yakaladım hayalet!"],["Yummy ghost! Go away!","Lezzetli hayalet! Git buradan!"],["Yes! Take that, ghost!","Evet! Al sana hayalet!"]];
+let busy=false,gen=0,busyT;
 function speak(en,dbg){
  const ss=window.speechSynthesis;if(!ss){if(dbg)alert('Bu tarayıcı konuşmayı desteklemiyor. Chrome (Android) veya Safari (iPhone) ile aç.');return}
+ const my=++gen;busy=true;clearTimeout(busyT);busyT=setTimeout(()=>{if(gen===my)busy=false},en.length*90+2000);
  try{ss.cancel();ss.resume()}catch(e){}
- setTimeout(()=>{try{
-  const u=new SpeechSynthesisUtterance(en);u.lang='en-US';u.rate=.8;u.pitch=1.25;u.volume=1;
+ setTimeout(()=>{if(gen!==my)return;try{
+  const u=new SpeechSynthesisUtterance(en);u.lang='en-US';u.rate=.95;u.pitch=1.12;u.volume=1;
   const v=(ss.getVoices()||[]).filter(x=>/^en/i.test(x.lang));
   if(dbg&&!v.length)alert('Telefonda İngilizce ses bulunamadı. Ayarlar > Metin okuma (TTS) bölümünden İngilizce ses yükle.');
-  const pv=v.find(x=>/en[-_]US/i.test(x.lang))||v[0];if(pv)u.voice=pv;
-  if(dbg)u.onerror=e=>alert('Ses hatası: '+e.error);
+  const pv=v.find(x=>/Google US English|Samantha|Karen|Aaron|Nicky|Enhanced|Premium|Natural/i.test(x.name))||v.find(x=>/en[-_]US/i.test(x.lang))||v[0];if(pv)u.voice=pv;
+  u.onend=()=>{if(gen===my)busy=false};
+  u.onerror=e=>{if(gen===my){busy=false;if(dbg)alert('Ses hatası: '+e.error)}};
   ss.speak(u)}catch(e){if(dbg)alert('Hata: '+e)}},80)}
 if(window.speechSynthesis){speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();speechSynthesis.getVoices()}
 let unl=false;function unlock(){if(unl||!window.speechSynthesis)return;unl=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
 addEventListener('touchstart',unlock,{passive:true});addEventListener('pointerdown',unlock);addEventListener('click',unlock);
 function say(en,tr,force,dbg){
  if(!ENG&&!dbg)return;
- if(!force&&Date.now()-lastT<3500)return;
- lastT=Date.now();
  const c=$('cap');c.innerHTML='<b></b><i></i>';c.firstChild.textContent=en;c.lastChild.textContent=tr;c.classList.add('on');
- clearTimeout(capT);capT=setTimeout(()=>c.classList.remove('on'),3200);
+ clearTimeout(capT);capT=setTimeout(()=>c.classList.remove('on'),6000);
  speak(en,dbg)}
 function pickR(a){
  if(!a._d||!a._d.length){a._d=[...a].sort(()=>Math.random()-.5);const n=a._d.length-1;if(a._l&&n>0&&a._d[n]===a._l)[a._d[0],a._d[n]]=[a._d[n],a._d[0]]}
  return a._l=a._d.pop()}
 const sayR=(a,f)=>{const q=pickR(a);say(q[0],q[1],f)};
+setInterval(()=>{if(ENG&&state==='play'&&!busy)sayR(CHAT,true)},300);
 function engBtn(){$('engb').textContent='🔊 İngilizce: '+(ENG?'AÇIK':'KAPALI')}
 $('testb').onclick=()=>{show('game');state='menu';say('Hello! I am Pacman.','Merhaba! Ben Pacman.',true,true);setTimeout(()=>show('menu'),3500)};
-$('engb').onclick=()=>{ENG=!ENG;try{localStorage.setItem('pm_eng',ENG?'1':'0')}catch(e){}engBtn();if(ENG)say('Hello!','Merhaba!',true)};
+$('engb').onclick=()=>{ENG=!ENG;try{localStorage.setItem('pm_eng',ENG?'1':'0')}catch(e){}engBtn();if(!ENG&&window.speechSynthesis)speechSynthesis.cancel();if(ENG)say('Hello!','Merhaba!',true)};
 engBtn();
-function start(){score=0;lives=5;level=1;dc=0;newLevel();size();hud();state='play';msg('');say("Let's play!","Hadi oynayalım!",true)}
+function start(){score=0;lives=5;level=1;dc=0;newLevel();size();hud();state='play';msg('');say("Ready, set, go! Let's eat all the dots!","Hazır, bitti, başla! Hadi tüm noktaları yiyelim!",true)}
 function hud(){$('sc').textContent='⭐ '+score;$('lv').textContent='Seviye '+level;$('li').textContent='❤️'.repeat(lives)}
 function msg(m){$('msg').textContent=m}
 function setDir(n){const d=DIR[n];if(!d||state!=='play')return;nd=d;
@@ -161,7 +162,7 @@ function pChoose(e){
 function pArrive(e){
  const v=grid[e.r][e.c];
  if(v==='.'||v==='o'){grid[e.r][e.c]=' ';dots--;score+=v==='o'?50:10;
-  if(v==='o'){fright=9;gh.forEach(g=>g.f=true);sayR(STRONG)}else if(++dc%30===0)sayR(FOOD)
+  if(v==='o'){fright=9;gh.forEach(g=>g.f=true);sayR(STRONG)}
   hud();if(dots<=0){state='win';tmr=2.8;msg('🎉 Bravo! 🎉');sayR(WIN,true)}}}
 function gChoose(g){
  if(g.w>0){g.dx=g.dy=0;return}
@@ -182,8 +183,8 @@ function update(dt){
  if(fright>0){fright-=dt;if(fright<=0)gh.forEach(g=>g.f=false)}
  gh.forEach(g=>{if(g.w>0)g.w-=dt;g.sp=g.f?1.8:Math.min(2.3+level*.2,3.4);step(g,dt,gChoose)});
  for(const g of gh){if(Math.hypot(px(g)-px(pac),py(g)-py(pac))<.6){
-  if(g.f){g.f=false;score+=200;hud();sayR(GHOST,true);Object.assign(g,mk(7,7,g.sp),{w:2,i:g.i})}
-  else{lives--;hud();state='hit';tmr=1.3;msg(lives>0?'Hay aksi! 😮':'');if(lives>0)sayR(SAD,true);else say("I am sleepy. Good night.","Uykum geldi. İyi geceler.",true);break}}}}
+  if(g.f){g.f=false;score+=200;hud();sayR(GHOST,true);Object.assign(g,mk(5,7,g.sp),{w:2,i:g.i})}
+  else{lives--;hud();state='hit';tmr=1.3;msg(lives>0?'Hay aksi! 😮':'');if(lives>0)sayR(SAD,true);else say("Oh no, game over! Let's play again soon!","Ah hayır, oyun bitti! Yakında tekrar oynayalım!",true);break}}}}
 function sprite(k,cx,cy,rad,col,ring,extra){
  const im=imgs[k];
  if(im){x.save();x.beginPath();x.arc(cx,cy,rad,0,7);x.clip();x.drawImage(im,cx-rad,cy-rad,rad*2,rad*2);
@@ -212,7 +213,7 @@ function draw(){
 function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
  if(state!=='menu'){update(dt);draw()}requestAnimationFrame(loop)}
 $('play').onclick=()=>{show('game');start()};
-$('menub').onclick=()=>{state='menu';show('menu')};
+$('menub').onclick=()=>{state='menu';try{speechSynthesis.cancel()}catch(e){}show('menu')};
 document.querySelectorAll('#pad button').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();setDir(b.dataset.d)}));
 addEventListener('keydown',e=>{const m={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',w:'u',s:'d',a:'l',d:'r'}[e.key];if(m){e.preventDefault();setDir(m)}});
 let sx,sy;
