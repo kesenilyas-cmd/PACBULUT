@@ -35,6 +35,7 @@ h1{font-size:44px;margin:7vh 0 4vh;color:#ffd400;text-shadow:0 4px 0 #b8860b}
 <div id="pick" class="scr">
  <h2 style="margin:14px 0 8px">Fotoğrafları Seç</h2>
  <div id="grid"></div>
+ <div style="margin-top:10px;font-weight:700">🔍 Foto boyutu <input type="range" id="ps" min="1" max="2.6" step="0.1" style="vertical-align:middle;width:55vw"></div>
  <button class="btn" id="back" style="margin-top:12px">⬅ Geri</button>
 </div>
 
@@ -76,6 +77,8 @@ function buildPick(){
     loadImgs();buildPick()};im.src=r.result};r.readAsDataURL(f)};
   rst.onclick=()=>{try{localStorage.removeItem('pm_'+s.k)}catch(e){}loadImgs();buildPick()};
   d.append(pv,lab,rst);g.appendChild(d)})}
+let PS=1.9;try{PS=parseFloat(localStorage.getItem('pm_ps'))||1.9}catch(e){}
+$('ps').value=PS;$('ps').oninput=e=>{PS=parseFloat(e.target.value);try{localStorage.setItem('pm_ps',PS)}catch(_){}};
 $('pickb').onclick=()=>{buildPick();show('pick')};
 $('back').onclick=()=>show('menu');
 
@@ -154,13 +157,13 @@ function draw(){
   const blink=g.f&&fright<2&&Math.floor(t*6)%2;
   const col=g.f?(blink?'#fff':'#2a4bff'):SL[g.i+1].c;
   const wob=g.f?Math.sin(t*20)*T*.04:0;
-  if(!sprite('g'+g.i,cx+wob,cy,rad,col,col,g.f?'dim':'')){
+  if(!sprite('g'+g.i,cx+wob,cy,rad*PS,col,col,g.f?'dim':'')){
    x.fillStyle=col;x.beginPath();x.arc(cx,cy-rad*.1,rad,Math.PI,0);x.lineTo(cx+rad,cy+rad);
    for(let k=0;k<4;k++)x.lineTo(cx+rad-(k+.5)*rad/2,cy+rad*(k%2?1:.7));x.lineTo(cx-rad,cy+rad);x.fill();
    x.fillStyle='#fff';[-1,1].forEach(s=>{x.beginPath();x.arc(cx+s*rad*.38,cy-rad*.2,rad*.25,0,7);x.fill()});
    x.fillStyle='#123';[-1,1].forEach(s=>{x.beginPath();x.arc(cx+s*rad*.38+pac.dx*2,cy-rad*.2,rad*.12,0,7);x.fill()})}});
  const cx=(px(pac)+.5)*T,cy=(py(pac)+.5)*T,rad=T*.48*(state==='hit'?Math.max(.1,tmr/1.3):1);
- if(!sprite('pac',cx,cy,rad,'#ffd400','#ffd400')){
+ if(!sprite('pac',cx,cy,rad*PS,'#ffd400','#ffd400')){
   const m=(Math.sin(t*14)+1)/2*.6+.05,a=Math.atan2(pac.dy,pac.dx||(pac.dy?0:1));
   x.fillStyle='#ffd400';x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,rad,a+m,a+Math.PI*2-m);x.fill()}}
 function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
