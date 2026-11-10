@@ -116,7 +116,16 @@ const WIN=[["Hooray! We did it! I am so happy!","Yaşasın! Başardık! Çok mut
 const STRONG=[["Wow! I am super strong now!","Vay! Şimdi süper güçlüyüm!"],["Power up! I am a super hero!","Güç doldu! Ben süper kahramanım!"],["Rawr! Now I can eat the ghosts!","Rrrr! Şimdi hayaletleri yiyebilirim!"],["Look out, ghosts! Here I come!","Dikkat hayaletler! Geliyorum!"]];
 const GHOST=[["Gotcha! Bye bye, ghost!","Yakaladım! Güle güle hayalet!"],["Ha ha! I got you, ghost!","Ha ha! Seni yakaladım hayalet!"],["Yummy ghost! Go away!","Lezzetli hayalet! Git buradan!"],["Yes! Take that, ghost!","Evet! Al sana hayalet!"]];
 let busy=false,gen=0,busyT;
+const AUD={"Yum yum yum! These dots are so yummy!": "audio/f6d558410a.mp3", "I am so hungry! Let me eat them all!": "audio/5f35e9b9d1.mp3", "Go go go! You can do it!": "audio/3fa2fb486e.mp3", "Watch out for the ghosts!": "audio/d09d81ed8a.mp3", "Wow, this is so much fun!": "audio/bbffa90264.mp3", "I love eating dots!": "audio/fae4c592f1.mp3", "Faster, faster, faster!": "audio/4cfb719f87.mp3", "Look, there are more dots over there!": "audio/383a3c79b2.mp3", "I am the best Pacman in the world!": "audio/ca82cf354d.mp3", "Oh, I can see a big dot! Let's get it!": "audio/06a85e7530.mp3", "Don't stop! Keep going!": "audio/d4e5e2482d.mp3", "I am running so fast today!": "audio/32bbfbf51f.mp3", "Turn left! No, turn right!": "audio/313aa35237.mp3", "Ha ha! The ghosts can't catch me!": "audio/b77cceda1e.mp3", "My tummy is going to be so full!": "audio/f66d837585.mp3", "One more dot, and one more, and one more!": "audio/86195aefae.mp3", "This is the best game ever!": "audio/1f16bd3806.mp3", "I am going to school soon, but first, dots!": "audio/6a6c6c13b8.mp3", "I want to go home and eat dinner!": "audio/fd1f28ee95.mp3", "Yay! I am so happy right now!": "audio/b3eb2e6380.mp3", "Come on, my friend, let's go!": "audio/9c8e429649.mp3", "I can hear the ghosts coming!": "audio/e3e8365417.mp3", "Up, down, left, right! Here I go!": "audio/65faec3014.mp3", "Wow, look at all these dots!": "audio/87d053720a.mp3", "Munch, munch, munch! So tasty!": "audio/715d6d1c14.mp3", "I am not scared of anything!": "audio/34519ae469.mp3", "Are you ready? Here we go again!": "audio/cf0d4a867a.mp3", "Smile! We are playing a great game!": "audio/f418c167d1.mp3", "I am so hungry, I could eat a hundred dots!": "audio/0eab1d7b13.mp3", "Quick, eat the dots before the ghosts come!": "audio/ef704dfe43.mp3", "Good job! Keep it up!": "audio/37c4796313.mp3", "I like school, but I like this game more!": "audio/b74d306990.mp3", "New level! Ready, set, go!": "audio/309d7f8e78.mp3", "Hello, friend! Are you ready to play?": "audio/5601fb4806.mp3", "I am going home, but first, let's eat!": "audio/695769d035.mp3", "I want to go to school, but first, let's play!": "audio/d6f6fed496.mp3", "Here we go! Let's eat some dots!": "audio/f8d5f016e2.mp3", "I am hungry again! Dots, here I come!": "audio/1e30e771ae.mp3", "Wow, a new maze! Let's explore!": "audio/dce6f386f5.mp3", "Let's go, let's go, let's go!": "audio/5a07a91f1e.mp3", "I am ready for a new adventure!": "audio/d2b6727121.mp3", "Hooray, let's play again!": "audio/cfc7f869d8.mp3", "Oh no! The ghost got me!": "audio/95d3eeb804.mp3", "Ouch! That was scary!": "audio/ec7ed4bc84.mp3", "Oops! Let's try again!": "audio/bc563007b6.mp3", "Help! Help! It's a ghost!": "audio/1059255787.mp3", "Oh no, I am a little bit sad.": "audio/87e7dc6694.mp3", "Don't worry, I can do it again!": "audio/74164f04ad.mp3", "Hooray! We did it! I am so happy!": "audio/f3428ee8c1.mp3", "Yay! All the dots are gone! I am full!": "audio/ad8d1e96a5.mp3", "Wow, you are amazing! Great job!": "audio/7494d5e392.mp3", "I did it! I did it! I am the winner!": "audio/0f62ba24ad.mp3", "Well done! Now I am going home!": "audio/518c095c7c.mp3", "Fantastic! You are the best!": "audio/6153ef45e3.mp3", "Wow! I am super strong now!": "audio/d40f754a7d.mp3", "Power up! I am a super hero!": "audio/3395b5fd27.mp3", "Rawr! Now I can eat the ghosts!": "audio/b1d320911a.mp3", "Look out, ghosts! Here I come!": "audio/0f1c93f26a.mp3", "Gotcha! Bye bye, ghost!": "audio/9c2152e9a1.mp3", "Ha ha! I got you, ghost!": "audio/db65b3a76d.mp3", "Yummy ghost! Go away!": "audio/e307af0893.mp3", "Yes! Take that, ghost!": "audio/56b0cedf58.mp3", "Ready, set, go! Let's eat all the dots!": "audio/6636284348.mp3", "Oh no, game over! Let's play again soon!": "audio/d0edf647d4.mp3", "Hello! I am Pacman.": "audio/ca2f06721f.mp3", "Hello!": "audio/952d2c56d0.mp3"};
+const A=new Audio();A.preload='auto';
 function speak(en,dbg){
+ const f=AUD[en];if(!f)return speakTTS(en,dbg);
+ const my=++gen;busy=true;clearTimeout(busyT);busyT=setTimeout(()=>{if(gen===my)busy=false},15000);
+ try{speechSynthesis.cancel()}catch(e){}
+ A.onended=()=>{if(gen===my)busy=false};
+ A.onerror=()=>{if(gen===my){busy=false;if(dbg)alert('Ses dosyası yüklenemedi: '+f)}};
+ try{A.pause();A.src=f;const p=A.play();if(p&&p.catch)p.catch(e=>{if(gen===my){busy=false;if(dbg)alert('Ses engellendi: '+e.name+'. Medya sesini ve sessiz modu kontrol et.')}})}catch(e){busy=false}}
+function speakTTS(en,dbg){
  const ss=window.speechSynthesis;if(!ss){if(dbg)alert('Bu tarayıcı konuşmayı desteklemiyor. Chrome (Android) veya Safari (iPhone) ile aç.');return}
  const my=++gen;busy=true;clearTimeout(busyT);busyT=setTimeout(()=>{if(gen===my)busy=false},en.length*90+2000);
  try{ss.cancel();ss.resume()}catch(e){}
@@ -129,7 +138,7 @@ function speak(en,dbg){
   u.onerror=e=>{if(gen===my){busy=false;if(dbg)alert('Ses hatası: '+e.error)}};
   ss.speak(u)}catch(e){if(dbg)alert('Hata: '+e)}},80)}
 if(window.speechSynthesis){speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();speechSynthesis.getVoices()}
-let unl=false;function unlock(){if(unl||!window.speechSynthesis)return;unl=true;try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
+let unl=false;function unlock(){if(unl||gen>0)return;unl=true;try{A.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=';const p=A.play();p&&p.catch&&p.catch(()=>{})}catch(e){}}
 addEventListener('touchstart',unlock,{passive:true});addEventListener('pointerdown',unlock);addEventListener('click',unlock);
 function say(en,tr,force,dbg){
  if(!ENG&&!dbg)return;
@@ -143,7 +152,7 @@ const sayR=(a,f)=>{const q=pickR(a);say(q[0],q[1],f)};
 setInterval(()=>{if(ENG&&state==='play'&&!busy)sayR(CHAT,true)},300);
 function engBtn(){$('engb').textContent='🔊 İngilizce: '+(ENG?'AÇIK':'KAPALI')}
 $('testb').onclick=()=>{show('game');state='menu';say('Hello! I am Pacman.','Merhaba! Ben Pacman.',true,true);setTimeout(()=>show('menu'),3500)};
-$('engb').onclick=()=>{ENG=!ENG;try{localStorage.setItem('pm_eng',ENG?'1':'0')}catch(e){}engBtn();if(!ENG&&window.speechSynthesis)speechSynthesis.cancel();if(ENG)say('Hello!','Merhaba!',true)};
+$('engb').onclick=()=>{ENG=!ENG;try{localStorage.setItem('pm_eng',ENG?'1':'0')}catch(e){}engBtn();if(!ENG){try{A.pause();speechSynthesis.cancel()}catch(e){}}if(ENG)say('Hello!','Merhaba!',true)};
 engBtn();
 function start(){score=0;lives=5;level=1;dc=0;newLevel();size();hud();state='play';msg('');say("Ready, set, go! Let's eat all the dots!","Hazır, bitti, başla! Hadi tüm noktaları yiyelim!",true)}
 function hud(){$('sc').textContent='⭐ '+score;$('lv').textContent='Seviye '+level;$('li').textContent='❤️'.repeat(lives)}
@@ -213,7 +222,7 @@ function draw(){
 function loop(ts){const dt=Math.min(.05,(ts-last)/1000||0);last=ts;
  if(state!=='menu'){update(dt);draw()}requestAnimationFrame(loop)}
 $('play').onclick=()=>{show('game');start()};
-$('menub').onclick=()=>{state='menu';try{speechSynthesis.cancel()}catch(e){}show('menu')};
+$('menub').onclick=()=>{state='menu';try{speechSynthesis.cancel();A.pause()}catch(e){}show('menu')};
 document.querySelectorAll('#pad button').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();setDir(b.dataset.d)}));
 addEventListener('keydown',e=>{const m={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',w:'u',s:'d',a:'l',d:'r'}[e.key];if(m){e.preventDefault();setDir(m)}});
 let sx,sy;
