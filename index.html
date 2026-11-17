@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr"><head><meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <title>Pac-Man</title>
@@ -47,8 +48,8 @@ h1{font-size:44px;margin:7vh 0 4vh;color:#ffd400;text-shadow:0 4px 0 #b8860b}
 </div>
 
 <div id="game" class="scr">
- <div id="hud"><button id="menub">☰</button><span id="sc">0</span><span id="lv">Seviye 1</span><span id="li"></span></div>
- <div id="wrap"><canvas id="cv"></canvas><div id="msg"></div><div id="cap"></div></div>
+ <div id="hud"><button id="menub">☰</button><span id="sc">0</span><span id="lv">🏁 1</span><span id="li"></span></div>
+ <div id="wrap"><canvas id="cv"></canvas><div id="msg"></div></div>
  <div id="pad">
   <span></span><button data-d="u">▲</button><span></span>
   <button data-d="l">◀</button><span></span><button data-d="r">▶</button>
@@ -151,9 +152,7 @@ function unlock(){const c=ac();if(!c||c.state==='running')return;try{c.resume();
 addEventListener('touchend',unlock);addEventListener('click',unlock);
 function say(en,tr,force,dbg){
  if(!ENG&&!dbg)return;
- const c=$('cap');c.innerHTML='<b></b><i></i>';c.firstChild.textContent=en;c.lastChild.textContent=tr;c.classList.add('on');
- clearTimeout(capT);capT=setTimeout(()=>c.classList.remove('on'),6000);
- speak(en,dbg)}
+  speak(en,dbg)}
 function pickR(a){
  if(!a._d||!a._d.length){a._d=[...a].sort(()=>Math.random()-.5);const n=a._d.length-1;if(a._l&&n>0&&a._d[n]===a._l)[a._d[0],a._d[n]]=[a._d[n],a._d[0]]}
  return a._l=a._d.pop()}
@@ -166,7 +165,7 @@ $('testb').onclick=()=>{show('game');state='menu';ENG=true;played=false;unlock()
 $('engb').onclick=()=>{ENG=!ENG;try{localStorage.setItem('pm_eng',ENG?'1':'0')}catch(e){}engBtn();if(!ENG){try{stopNode();speechSynthesis.cancel()}catch(e){}}if(ENG)say('Hello!','Merhaba!',true)};
 engBtn();
 function start(){score=0;lives=5;level=1;dc=0;newLevel();size();hud();state='play';msg('');say("Ready, set, go, Bulut! Let's eat all the dots!","Hazır, bitti, başla Bulut! Hadi tüm noktaları yiyelim!",true)}
-function hud(){$('sc').textContent='⭐ '+score;$('lv').textContent='Seviye '+level;$('li').textContent='❤️'.repeat(lives)}
+function hud(){$('sc').textContent='⭐ '+score;$('lv').textContent='🏁 '+level;$('li').textContent='❤️'.repeat(lives)}
 function msg(m){$('msg').textContent=/Oyun bitti/.test(m)?'🔄':''}
 function setDir(n){const d=DIR[n];if(!d||state!=='play')return;nd=d;
  if(pac.mv&&d[0]===-pac.dx&&d[1]===-pac.dy&&(d[0]||d[1])){pac.c+=pac.dx;pac.r+=pac.dy;pac.dx=d[0];pac.dy=d[1];pac.p=1-pac.p}}
